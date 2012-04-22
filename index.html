@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>tail.js</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    var socket = io.connect('http://50.56.223.160:5309');
+    socket.on('message', function (data) {
+      console.log(data);
+    });
+    socket.on('init', function (data) {
+      console.log(data);
+    });
+  </script>
+</head>
+<body>
+Connected!
+</body>
+</html>
