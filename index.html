@@ -63,6 +63,7 @@
         if (files[file_index].filename == data.file.filename) {
           file = files[file_index];
           $(file.panel).append('<p>'+data.message+'</p>');
+          $(file.panel).scrollTop($(file.panel).get(0).scrollHeight);
         }
       }
       console.log(data);
