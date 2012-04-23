@@ -80,16 +80,22 @@ io.set('authorization', function(data, accept) {
 });
 
 io.sockets.on('connection', function(socket) {
-  console.log('connection established?');
   var user = users[socket.handshake.session.user_id];
+  if (!user) {
+    console.log("Attempted to get user " + socket.handshake.session.user_id);
+    return;
+  }
   user.socket = socket;
   user.following = {};
   socket.emit('init',{files: config.files});
-  socket.on('follow',function(filename) {
+
+  socket.on('follow', function(filename) {
     user.following[filename] = true;
+    socket.emit('follow', filename);
   });
-  socket.on('unfollow',function(filename) {
+  socket.on('unfollow', function(filename) {
     user.following[filename] = false;
+    socket.emit('unfollow', filename);
   });
 });
 

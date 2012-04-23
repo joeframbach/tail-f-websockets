@@ -1,21 +1,92 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>tail.js</title>
+  <title>Tail -F</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
-  <script src="/socket.io/socket.io.js"></script>
-  <script>
-    var socket = io.connect('http://50.56.223.160:5309');
+  <link rel="stylesheet" type="text/css" href="/css/smoothness/jquery-ui-1.8.19.custom.css" />
+  <style>
+    body { font-size: 62.5%; }
+    #tabs { margin-top: 1em; }
+    #tabs li .ui-icon { float: left; margin: 0.4em 0.6em 0 0; cursor: pointer; }
+    #tabs li a { cursor: default; }
+  </style>
+  <script type="text/javascript" src="/js/jquery-1.7.1.min.js"></script>
+  <script type="text/javascript" src="/js/jquery-ui-1.8.19.custom.min.js"></script>
+  <script type="text/javascript" src="/socket.io/socket.io.js"></script>
+  <script type="text/javascript">
+    var socket;
+    var files = {};
+
+    $(function() {
+      var $tabs = $("#tabs").tabs({
+        tabTemplate: '<li><a href="#{href}">#{label}</a> <span class="ui-icon ui-icon-play">Status</span></li>',
+        add: function(event, ui) {
+          var $a = $(ui.tab);
+          var file_index = +$a.attr('href').match(/\d/)[0];
+          files[file_index].icon = $a.siblings('.ui-icon');
+          files[file_index].panel = ui.panel;
+          $a.siblings('.ui-icon').data('file_index',file_index);
+        }
+      });
+      $tabs.find( ".ui-tabs-nav" ).sortable({ axis: "x" });
+
+      $tabs.on('click', '.ui-icon-play', function() {
+        var file = files[$(this).data('file_index')];
+        socket.emit('follow',file.filename);
+        $(this).removeClass('ui-icon-play').addClass('ui-icon-transfer-e-w');
+      });
+
+      $tabs.on('click', '.ui-icon-pause', function() {
+        var file = files[$(this).data('file_index')];
+        socket.emit('unfollow',file.filename);
+        $(this).removeClass('ui-icon-pause').addClass('ui-icon-transfer-e-w');
+      });
+
+    });
+
+    socket = io.connect('http://50.56.223.160:5309');
+    socket.on('init', function (data) {
+      files = data.files;
+      for (file_index in files) {
+        file = files[file_index];
+        $('#tabs').tabs('add','#tabs-'+file_index,file.display_name);
+      }
+    });
     socket.on('message', function (data) {
+      // todo figure out a better file lookup by filename
+      for (file_index in files) {
+        if (files[file_index].filename == data.file.filename) {
+          file = files[file_index];
+          $(file.panel).append('<p>'+data.message+'</p>');
+        }
+      }
       console.log(data);
     });
-    socket.on('init', function (data) {
-      console.log(data);
+    socket.on('follow', function(filename) {
+      // todo figure out a better file lookup by filename
+      for (file_index in files) {
+        if (files[file_index].filename == filename) {
+          $(files[file_index].icon).removeClass('ui-icon-transfer-e-w ui-icon-play').addClass('ui-icon-pause');
+        }
+      }
+    });
+    socket.on('unfollow', function(filename) {
+      // todo figure out a better file lookup by filename
+      for (file_index in files) {
+        if (files[file_index].filename == filename) {
+          $(files[file_index].icon).removeClass('ui-icon-transfer-e-w ui-icon-pause').addClass('ui-icon-play');
+          break;
+        }
+      }
     });
   </script>
 </head>
 <body>
+<div id="menu">
 Connected!
+</div>
+<div id="tabs">
+<ul></ul>
+</div>
 </body>
 </html>
