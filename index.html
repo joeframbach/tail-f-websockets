@@ -33,22 +33,27 @@
           $a.siblings('.ui-icon').data('file_index',file_index);
         },
         show: function(event, ui) {
-          console.log($(ui.panel));
           $(ui.panel).scrollTop($(ui.panel).get(0).scrollHeight);
         }
       });
       $tabs.find( ".ui-tabs-nav" ).sortable({ axis: "x" });
 
       $tabs.on('click', '.ui-icon-play', function() {
-        var file = files[$(this).data('file_index')];
-        socket.emit('follow',file.filename);
-        $(this).removeClass('ui-icon-play').addClass('ui-icon-transfer-e-w');
+        var $icon = $(this);
+        var file = files[$icon.data('file_index')];
+        $icon.removeClass('ui-icon-play').addClass('ui-icon-transfer-e-w');
+        socket.emit('follow', file.filename, function(data) {
+          $icon.removeClass('ui-icon-transfer-e-w').addClass('ui-icon-pause');
+        });
       });
 
       $tabs.on('click', '.ui-icon-pause', function() {
-        var file = files[$(this).data('file_index')];
-        socket.emit('unfollow',file.filename);
-        $(this).removeClass('ui-icon-pause').addClass('ui-icon-transfer-e-w');
+        var $icon = $(this);
+        var file = files[$icon.data('file_index')];
+        $icon.removeClass('ui-icon-pause').addClass('ui-icon-transfer-e-w');
+        socket.emit('unfollow', file.filename, function(data) {
+          $icon.removeClass('ui-icon-transfer-e-w').addClass('ui-icon-play');
+        });
       });
 
     });
@@ -68,23 +73,6 @@
           file = files[file_index];
           $(file.panel).append('<p>'+data.message+'</p>');
           $(file.panel).scrollTop($(file.panel).get(0).scrollHeight);
-        }
-      }
-    });
-    socket.on('follow', function(filename) {
-      // todo figure out a better file lookup by filename
-      for (file_index in files) {
-        if (files[file_index].filename == filename) {
-          $(files[file_index].icon).removeClass('ui-icon-transfer-e-w ui-icon-play').addClass('ui-icon-pause');
-        }
-      }
-    });
-    socket.on('unfollow', function(filename) {
-      // todo figure out a better file lookup by filename
-      for (file_index in files) {
-        if (files[file_index].filename == filename) {
-          $(files[file_index].icon).removeClass('ui-icon-transfer-e-w ui-icon-pause').addClass('ui-icon-play');
-          break;
         }
       }
     });

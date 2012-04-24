@@ -27,6 +27,7 @@ app.configure(function() {
 
 // AUTHENTICATION
 
+var sockets = {};
 var users = {};
 
 if (config.auth.type == 'github') {
@@ -57,10 +58,10 @@ config.files.forEach(function(file) {
         return;
       if (file.markup)
         line = file.markup(line);
-      for (user_id in users) {
-        user = users[user_id];
-        if (user.following[file.filename] && user.socket)
-          user.socket.emit('message',{file:file,message:line});
+      for (socket_id in sockets) {
+        socket = sockets[socket_id];
+        if (socket.following[file.filename])
+          socket.emit('message',{file:file,message:line});
       };
     });
   });
@@ -85,18 +86,21 @@ io.sockets.on('connection', function(socket) {
     console.log("Attempted to get user " + socket.handshake.session.user_id);
     return;
   }
-  user.socket = socket;
-  user.following = {};
+
+  socket.user = user;
+  sockets[socket.id] = socket;
   socket.emit('init',{files: config.files});
 
-  socket.on('follow', function(filename) {
-    user.following[filename] = true;
-    socket.emit('follow', filename);
+  socket.following = {};
+  socket.on('follow', function(filename, confirm) {
+    socket.following[filename] = true;
+    confirm();
   });
-  socket.on('unfollow', function(filename) {
-    user.following[filename] = false;
-    socket.emit('unfollow', filename);
+  socket.on('unfollow', function(filename, confirm) {
+    socket.following[filename] = false;
+    confirm();
   });
+
 });
 
 console.log('Running.');
