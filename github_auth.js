@@ -5,8 +5,6 @@ exports.express = (function(app,users) {
   
   everyauth.everymodule
            .findUserById( function (id, callback) {
-              console.log('fetching user ' + id);
-              console.log(users[id]);
               callback(null, users[id]);
            });
   everyauth.github
@@ -15,6 +13,8 @@ exports.express = (function(app,users) {
            .scope('user')
            .findOrCreateUser(function (session, access_token, access_token_extra, github_user) {
               var user_promise = this.Promise();
+
+              session.user_id = github_user.id;
   
               if (users[github_user.id]) {
                 user_promise.fulfill(users[github_user.id]);
@@ -25,15 +25,12 @@ exports.express = (function(app,users) {
                 return user_promise.fail(reason);
               });
 
-              var acceptUser = (function() { 
+              var acceptUser = (function() {
                 var user = {
                   id: github_user.id,
                   github: github_user,
                   github_access_token: access_token
                 };
-                console.log('creating user ' + github_user.id);
-                console.log(user);
-                session.user_id = github_user.id;
                 users[github_user.id] = user;
                 user_promise.fulfill(user);
                 return user_promise;
@@ -59,7 +56,6 @@ exports.express = (function(app,users) {
                   org_res.on('end', function () {
                     var orgs = JSON.parse(data);
                       for (org_id in orgs) {
-                        console.log('member of ' + orgs[org_id].login);
                         if (config.auth.organizations.indexOf(orgs[org_id].login) != -1) {
                           return acceptUser();
                         }
