@@ -1,0 +1,21 @@
+{
+  "author": "Joe Frambach",
+  "name": "tail-f-websockets",
+  "description": "Follow multiple log files and push updates to multiple clients.",
+  "version": "0.0.0",
+  "homepage": "github.com/joeframbach/tail-f-websockets",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/joeframbach/tail-f-websockets.git"
+  },
+  "main": "server.js",
+  "engines": {
+    "node": "~0.6.6"
+  },
+  "dependencies": {
+    "everyauth" : "0.2.32",
+    "express"   : "2.5.9",
+    "socket.io" : "0.9.6"
+  },
+  "devDependencies": {}
+}
