@@ -30,14 +30,13 @@ app.configure(function() {
 var sockets = {};
 var users = {};
 
-if (config.auth.type == 'github') {
-  require('./github_auth').express(app,users);
-}
-else if (config.auth.type == 'ldap') {
-  require('./ldap_auth').express(app,users);
-}
-else {
-  require('./no_auth').express(app,users);
+if (config.auth) {
+  if (config.auth.type == 'github') {
+    require('./github_auth').express(app,users);
+  }
+  else if (config.auth.type == 'ldap') {
+    require('./ldap_auth').express(app,users);
+  }
 }
 
 app.get('/', function (req, res) {
@@ -81,13 +80,14 @@ io.set('authorization', function(data, accept) {
 });
 
 io.sockets.on('connection', function(socket) {
-  var user = users[socket.handshake.session.user_id];
-  if (!user) {
-    console.log("Attempted to get user " + socket.handshake.session.user_id);
-    return;
+  if (config.auth) {
+    var user = users[socket.handshake.session.user_id];
+    if (!user) {
+      console.log("Attempted to get user " + socket.handshake.session.user_id);
+      return;
+    }
   }
 
-  socket.user = user;
   sockets[socket.id] = socket;
   socket.emit('init',{files: config.files});
 

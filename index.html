@@ -58,7 +58,7 @@
 
     });
 
-    socket = io.connect('http://50.56.223.160:5309');
+    socket = io.connect(document.url);
     socket.on('init', function (data) {
       files = data.files;
       for (file_index in files) {
