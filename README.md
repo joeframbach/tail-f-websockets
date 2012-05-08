@@ -17,5 +17,4 @@ My working setup uses express@0.2.32, express@2.5.9, socket.io@0.9.6.
 TODO:
 
 * ldap auth
-* no auth
-* client side
+* Clean up the client side. More flair.
